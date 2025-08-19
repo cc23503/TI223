@@ -1,0 +1,9 @@
+# Pasta de dependências
+node_modules/
+
+# Arquivos de configuração
+.env
+config.js
+
+# Arquivos de log
+*.log
