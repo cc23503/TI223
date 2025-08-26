@@ -35,6 +35,14 @@ app.get('/alunos', async (req, res) => {
     console.log(alunos);
 });
 
+app.get('/uf', async (req, res) => {
+    const uf = await mssql.query("SELECT * FROM dbo.aula_uf");
+
+    res.json(uf);
+    console.log(uf);
+
+});
+
 
 app.get('/alunos_SP', async (req, res) => {
     const alunos = await mssql.query("SELECT * FROM dbo.aula_aluno WHERE ufAluno = 'SP'")
@@ -55,9 +63,23 @@ app.post('/alunos', (req, res) => {
         mssql.query(`INSERT INTO dbo.aula_aluno (idAluno, ra, nomeAluno, ufAluno) VALUES (${idAluno}, ${ra}, '${nomeAluno}', '${ufAluno}')`)
         res.status(201).json({ "mensagem": "Dados inseridos com sucesso."})
 
-    } catch (erro){
-        console.log("Erro na inserção de dados.", erro)
+    } catch (erro) {
+        console.log("Erro na inserção de dados p/ tabela aula_aluno.", erro)
     }
+});
+
+app.post('/uf', (req, res) => {
+    try {
+        const siglauf = req.body.siglauf;
+        const nomeUf = req.body.nomeUf;
+
+        mssql.query(`INSERT INTO dbo.aula_uf (siglauf, nomeUf) VALUES ('${siglauf}', '${nomeUf}')`)
+        res.status(201).json({"mensagem": "Dados inseridos com sucesso."})
+
+    } catch (erro) {
+        console.log("Erro na inserção de dados p/ tabela aula_uf.", erro)
+    }
+
 });
 
 // iniciar servidor
