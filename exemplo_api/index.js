@@ -82,5 +82,103 @@ app.post('/uf', (req, res) => {
 
 });
 
+// 16/09/2025
+
+app.post('/curso', (req, res) => {
+    try {
+        const codCurso = req.body.codCurso;
+        const nomeCurso = req.body.nomeCurso;
+        const periodo = req.body.periodo;
+
+        mssql.query(`INSERT INTO dbo.Curso (codCurso, nomeCurso, periodo) VALUES ('${codCurso}', '${nomeCurso}', '${periodo}')`);
+        res.status(201).json({"mensagem": "Dados inseridos na tabela 'Curso' com sucesso."});
+
+    } catch (erro) {
+        console.log("Erro na inserção dos dados na tabela Curso." + erro)
+    }
+});
+
+app.delete('/curso/:codCurso', (req, res) => {
+    try {
+        const codCurso = req.params.codCurso;
+
+        mssql.query(`DELETE FROM dbo.Curso WHERE codCurso = '${codCurso}'`);
+        res.status(200).json({"mensagem": "Dados deletados da tabela 'Curso' com sucesso."});
+    } catch (erro) {
+        console.log("Erro ao realizar exclusão na tabela 'Curso'.");
+        res.status(500).json({"mensagem": "Erro interno no servidor."});
+    }
+
+});
+
+app.put('/curso/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { codCurso, nomeCurso, periodo } = req.body;
+
+        // Validação básica para garantir que todos os dados necessários estão no corpo da requisição
+        if (!codCurso || !nomeCurso || !periodo) {
+            return res.status(400).json({ "mensagem": "Dados incompletos. Por favor, forneça codCurso, nomeCurso e periodo." });
+        }
+
+        // Exemplo de consulta UPDATE. Use prepared statements para evitar SQL Injection!
+        const query = `
+            UPDATE dbo.Curso 
+            SET codCurso = '${codCurso}', 
+                nomeCurso = '${nomeCurso}', 
+                periodo = '${periodo}'
+            WHERE id = '${id}'
+        `;
+
+        const resultado = await mssql.query(query);
+
+        // Verifica se a atualização foi bem-sucedida (se alguma linha foi afetada)
+        if (resultado.rowsAffected[0] === 0) {
+            return res.status(404).json({ "mensagem": "Curso não encontrado para atualização." });
+        }
+
+        res.status(200).json({ "mensagem": "Curso atualizado com sucesso." });
+    } catch (erro) {
+        console.error("Erro ao atualizar o curso.", erro);
+        res.status(500).json({ "mensagem": "Erro interno do servidor." });
+    }
+});
+
+app.get('/curso-por-id/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const resultado = await mssql.query(`SELECT * FROM dbo.Curso WHERE id = '${id}'`);
+
+        // Verifica se algum curso foi encontrado
+        if (resultado.recordset.length === 0) {
+            return res.status(404).json({ "mensagem": "Curso não encontrado." });
+        }
+
+        res.status(200).json(resultado.recordset[0], {"mensagem": "Sucesso."});
+    } catch (erro) {
+        console.log("Erro ao realizar busca por ID na tabela 'Curso'.");
+        res.status(500).json({"mensagem": "Erro interno no servidor."});
+    }
+
+});
+
+app.get('/curso-por-codCurso/:codCurso', async (req, res) => {
+    try {
+        const codCurso = req.params.codCurso;
+
+        const resultado = await mssql.query(`SELECT * FROM dbo.Curso WHERE codCurso = '${codCurso}'`);
+
+        if (resultado.recordset.length === 0) {
+            return res.status(404).json({ "mensagem": "Curso não encontrado." });
+        }
+        res.status(200).json(resultado.recordset[0], {"mensagem": "Sucesso."});
+    } catch (erro) {
+        console.log("Erro ao realizar busca pelo Código do Curso na tabela 'Curso'.");
+        res.status(500).json({"mensagem": "Erro interno no servidor."});
+    }
+});
+
+
 // iniciar servidor
 app.listen(porta, () => console.log("API Funcionando!"));
